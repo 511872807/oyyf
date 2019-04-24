@@ -1,0 +1,280 @@
+#include <iostream>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#define Elemtype int
+#define max_stop 5
+#define max_pave 10
+
+using namespace std;
+
+typedef struct
+{
+    Elemtype top;
+    int license[5];
+    long int intime[5];
+}carstop,*CARSTOP;
+
+typedef struct
+{
+    Elemtype rear,fron;
+    int license[100];
+}carpave,*CARPAVE;
+
+void init_carstop(CARSTOP &p)
+{
+    p=new carstop;
+    p->top=-1;
+
+}
+
+void init_carpave(CARPAVE &p)
+{
+    p=new carpave;
+    p->fron=p->rear=0;
+
+
+
+}
+void init2_carstop(CARSTOP &p)
+{
+    time_t now;
+    long int t=time(&now);
+    int carno;
+    p=new carstop;
+    p->top=-1;
+    cout<<"请输入停车场内已存在的五辆车的车牌号"<<endl;
+    for(int i=0;i<5;i++)
+    {
+       p->top++;
+       cin>>carno;
+       p->license[p->top]=carno;
+       p->intime[p->top]=t;
+    }
+
+}
+//队的基本操作
+int QueueEmpty(CARPAVE p)
+{
+    return (p->fron==p->rear);
+}
+int QueueFull(CARPAVE q)
+{
+    return ((q->rear+1)%max_pave==q->fron);
+}
+int enQueue(CARPAVE &q,int e)
+{
+    if((q->rear+1)%max_pave==q->fron)
+    {
+        return 0;
+    }
+    q->rear=(q->rear+1)%max_pave;
+    q->license[q->rear]=e;
+    return 1;
+
+}
+int deQueue(CARPAVE &q,int &e)
+{
+    if(q->fron==q->rear)
+    {
+        return 0;
+    }
+    q->fron=(q->fron+1)%max_pave;
+    e=q->license[q->fron];
+    return 1;
+}
+void DisQueue(CARPAVE &q)
+{
+    int i;
+    i=(q->fron+1)%max_pave;
+    cout<<q->license[i]<<" ";
+    while((q->rear-i+max_pave)%max_pave>0)
+    {
+        i=(i+1)%max_pave;
+        cout<<q->license[i]<<" ";;
+    }
+    cout<<endl;
+
+}
+//栈的基本操作
+int StackEmpty(CARSTOP p)
+{
+    return (p->top==-1);
+}
+int StackFull(CARSTOP p)
+{
+    return (p->top==max_stop-1);
+}
+int Push(CARSTOP &p,int e1,long int e2)
+{
+    if(p->top==max_stop-1)
+    {
+        return 0;
+    }
+    p->top++;
+    p->license[p->top]=e1;
+    p->intime[p->top]=e2;
+    return 1;
+}
+int Pop(CARSTOP &p,int &e1,long int &e2)
+{
+    if(p->top==-1)
+    {
+
+        return 0;
+    }
+    e1=p->license[p->top];
+    e2=p->intime[p->top];
+    p->top--;
+    return 1;
+}
+void DisStack(CARSTOP p)
+{
+    int i;
+    for(i=p->top;i>=0;i--)
+    {
+        cout<<p->license[p->top]<<" ";
+    }
+    cout<<endl;
+}
+int main()
+{
+    cout<<"========================================================================================================="<<endl;
+   cout<<"停车场管理程序启动"<<endl<<"本停车场每秒收费1亿元，请理智消费"<<endl;
+    cout<<"========================================================================================================="<<endl;
+   int nico=1,no,k,j,e1,i;
+   long int e2;
+   CARSTOP S1,S2;
+   CARPAVE P;
+   init_carstop(S1);
+   init_carstop(S2);
+   init_carpave(P);
+   init2_carstop(S1);
+
+
+   while(nico!=0)
+   { cout<<"输入1存入车辆，输入2取出车辆,输入3显示停车场内情况，输入4显示便道内情况，输入0关闭系统"<<endl;
+       cin>>nico;
+   switch(nico)
+   {
+   case 1:
+       {cout<<"请输入要存入的车的车牌号"<<endl;
+           time_t now;
+       long int t=time(&now);
+       cin>>no;
+       if(!StackFull(S1))
+       {
+           Push(S1,no,t);
+           cout<<"停车场位置为"<<S1->top+1<<endl;
+       }
+       else
+       {
+           if(!QueueFull(P))
+           {
+               enQueue(P,no);
+               cout<<"车"<<no<<"停入候车场"<<endl;
+           }
+           else
+           {
+               cout<<"车位和便道都已经满了！"<<endl;
+           }
+
+       }
+    break;
+
+       }
+
+
+
+   case 2:
+    {
+    cout<<"请输入你要取出的车的车牌号"<<endl;
+    time_t now;
+    long int t=time(&now);
+    cin>>no;
+    for(i=0;i<=S1->top&&S1->license[i]!=no;i++)
+    {
+
+
+    }
+    if(i>S1->top)
+    {
+        cout<<"没有你要找的车辆！！！"<<endl;
+    }
+    else
+    {
+        k=S1->top-i;
+        for(j=0;j<k;j++)
+        {
+            Pop(S1,e1,e2);
+            Push(S2,e1,e2);
+        }
+        Pop(S1,e1,e2);
+        cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        cout<<e1<<"车的停车费用为"<<t-e2<<"亿元"<<endl<<"恭喜您获得纪念品要饭用的碗"<<endl;
+        cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        while(!StackEmpty(S2))
+        {
+            Pop(S2,e1,e2);
+            Push(S1,e1,e2);
+        }
+        if(!QueueEmpty(P))
+        {
+            deQueue(P,e1);
+            cout<<e1<<"停入停车场"<<endl;
+            Push(S1,e1,t);
+        }
+    }
+  break;
+    }
+   case 3:
+    {
+        if(!StackEmpty(S1))
+        {
+             cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+            DisStack(S1);
+             cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        }
+        else
+        {
+             cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+            cout<<"停车场里面没有车"<<endl;
+             cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        }break;
+    }
+   case 4:
+    {
+        if(!QueueEmpty(P))
+        { cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+            DisQueue(P);
+             cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        }
+        else
+        { cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+            cout<<"便道里面没车"<<endl;
+             cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        }
+        break;
+    }
+   case 0:
+    {
+        cout<<endl<<"退出"<<endl;
+        break;
+    }
+   default :
+    {
+         cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+         cout<<"ERROR"<<endl;
+          cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+         break;
+    }
+
+
+
+
+
+     }
+   }
+    return 0;
+}
